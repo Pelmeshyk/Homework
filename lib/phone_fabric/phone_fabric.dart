@@ -1,10 +1,14 @@
 import 'dart:io';
+const int countOfFirstDetailsToCreateTheBottomPart = 3;
+const int countOfSecondDetailsToCreateTheSidePart = 2;
+const int enoughDetailsToCreateTheBottomParts = 3;
+const int enoughDetailsToCreateTheSideParts = 4;
 
 void main(List<String> arguments) {
   List<String> ore = [
-    "*.**::::**..*::.*…**.*::",
-    "*.**::::**..*::.*…**.*::",
-    "*.**::::**..*::.*…**.*::",
+    '*.**::::**..*::.*…**.*::',
+    '*.**::::**..*::.*…**.*::',
+    '*.**::::**..*::.*…**.*::',
   ];
   int countFirstDetail = 0;
   int countSecondDetail = 0;
@@ -14,48 +18,51 @@ void main(List<String> arguments) {
 
   print("let's process the ore!");
   printAllOre(ore);
-  print("This is the ore we got.");
-  print("");
+  print('This is the ore we got.');
+  print('');
 
   String combinedOre = ore.join('');
-  countFirstDetail = combinedOre.split("*.").length - 1;
-  countSecondDetail = combinedOre.split(":").length - 1;
+  countFirstDetail = combinedOre.split('*.').length - 1;
+  countSecondDetail = combinedOre.split(':').length - 1;
 
-  print("Details of type *. = $countFirstDetail");
-  print("Details of type : = $countSecondDetail");
+  print('Details of type *. = $countFirstDetail');
+  print('Details of type : = $countSecondDetail');
 
-  checkingMinimumDetails(countFirstDetail, countSecondDetail);
+  if (!isDetailsCountEnough(countFirstDetail, countSecondDetail)) {
+    exit(0);
+  }
 
-  print("to do _ this part of the phone is necessary *. x3");
-  for (int i = countFirstDetail; i >= 3; i -= 3) {
+  print('to do _ this part of the phone is necessary *. x3');
+  for (int i = countFirstDetail; i >= countOfFirstDetailsToCreateTheBottomPart; i -= countOfFirstDetailsToCreateTheBottomPart) {
     countBottomPart++;
   }
-  print("We can do $countBottomPart bottom parts");
+  print('We can do $countBottomPart bottom parts');
 
-  print("to do | this part of the phone is necessary : x2");
-  for (int i = countSecondDetail; i >= 2; i -= 2) {
+  print('to do | this part of the phone is necessary : x2');
+  for (int i = countSecondDetail; i >= countOfSecondDetailsToCreateTheSidePart; i -= countOfSecondDetailsToCreateTheSidePart) {
     countSidePart++;
   }
-  print("We can do $countSidePart side parts");
-  print("");
+  print('We can do $countSidePart side parts');
+  print('');
 
-  print("To make a whole phone you need |_|");
+  print('To make a whole phone you need |_|');
 
-  phonesCounter = phoneCreating(countSidePart, countBottomPart);
+  phonesCounter = calculatePhoneCount(countSidePart, countBottomPart);
 
-  print("We made $phonesCounter phones:");
+  print('We made $phonesCounter phones:');
   printPhones(phonesCounter);
 }
 
-void checkingMinimumDetails(int countFirstDetail, int countSecondDetail) {
-  if(countFirstDetail < 3){
+bool isDetailsCountEnough(int countFirstDetail, int countSecondDetail) {
+  if (countFirstDetail < enoughDetailsToCreateTheBottomParts) {
     print("We don't have enough parts '*.' to make a phone.");
-    exit(0);
+    return false;
   }
-  if(countSecondDetail < 4){
+  if (countSecondDetail < enoughDetailsToCreateTheSideParts) {
     print("We don't have enough parts ':' to make a phone.");
-    exit(0);
+    return false;
   }
+  return true;
 }
 
 printAllOre(List<String> ore) {
@@ -66,11 +73,11 @@ printAllOre(List<String> ore) {
 
 printPhones(int countPhones) {
   for (int i = 0; i < countPhones; i++) {
-    print("|_|");
+    print('|_|');
   }
 }
 
-phoneCreating(int sidePart, int bottomPart) {
+calculatePhoneCount(int sidePart, int bottomPart) {
   int phonesCounter = 0;
   for (int i = 0; sidePart > 0 && bottomPart > 0; i++) {
     sidePart -= 2;
