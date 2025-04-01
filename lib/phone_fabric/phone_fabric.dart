@@ -3,6 +3,9 @@ const int countOfFirstDetailsToCreateTheBottomPart = 3;
 const int countOfSecondDetailsToCreateTheSidePart = 2;
 const int enoughDetailsToCreateTheBottomParts = 3;
 const int enoughDetailsToCreateTheSideParts = 4;
+const int minimumNumberOfBottomPartsToCreateAPhone = 1;
+const int minimumNumberOfSidePartsToCreateAPhone = 2;
+
 
 void main(List<String> arguments) {
   List<String> ore = [
@@ -32,17 +35,10 @@ void main(List<String> arguments) {
     exit(0);
   }
 
-  print('to do _ this part of the phone is necessary *. x3');
-  for (int i = countFirstDetail; i >= countOfFirstDetailsToCreateTheBottomPart; i -= countOfFirstDetailsToCreateTheBottomPart) {
-    countBottomPart++;
-  }
-  print('We can do $countBottomPart bottom parts');
+  countBottomPart = calculatingCountBottomParts(countFirstDetail, countBottomPart);
 
-  print('to do | this part of the phone is necessary : x2');
-  for (int i = countSecondDetail; i >= countOfSecondDetailsToCreateTheSidePart; i -= countOfSecondDetailsToCreateTheSidePart) {
-    countSidePart++;
-  }
-  print('We can do $countSidePart side parts');
+  countSidePart = calculatingCountSideParts(countSecondDetail, countSidePart);
+
   print('');
 
   print('To make a whole phone you need |_|');
@@ -51,6 +47,24 @@ void main(List<String> arguments) {
 
   print('We made $phonesCounter phones:');
   printPhones(phonesCounter);
+}
+
+int calculatingCountSideParts(int countSecondDetail, int countSidePart) {
+   print('to do | this part of the phone is necessary : x2');
+  for (int i = countSecondDetail; i >= countOfSecondDetailsToCreateTheSidePart; i -= countOfSecondDetailsToCreateTheSidePart) {
+    countSidePart++;
+  }
+  print('We can do $countSidePart side parts');
+  return countSidePart;
+}
+
+int calculatingCountBottomParts(int countFirstDetail, int countBottomPart) {
+  print('to do _ this part of the phone is necessary *. x3');
+  for (int i = countFirstDetail; i >= countOfFirstDetailsToCreateTheBottomPart; i -= countOfFirstDetailsToCreateTheBottomPart) {
+    countBottomPart++;
+  }
+  print('We can do $countBottomPart bottom parts');
+  return countBottomPart;
 }
 
 bool isDetailsCountEnough(int countFirstDetail, int countSecondDetail) {
@@ -80,8 +94,8 @@ printPhones(int countPhones) {
 calculatePhoneCount(int sidePart, int bottomPart) {
   int phonesCounter = 0;
   for (int i = 0; sidePart > 0 && bottomPart > 0; i++) {
-    sidePart -= 2;
-    bottomPart -= 1;
+    sidePart -= minimumNumberOfSidePartsToCreateAPhone;
+    bottomPart -= minimumNumberOfBottomPartsToCreateAPhone;
     phonesCounter++;
   }
   return phonesCounter;
