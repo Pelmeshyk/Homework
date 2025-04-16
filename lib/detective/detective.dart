@@ -2,9 +2,10 @@ import 'dart:core';
 import 'dart:io';
 
 const int numberDenotingTheTopNumberOfLongestWords = 5;
+const int wordOccurrenceIncrement = 1;
 
 void main() {
-  int countSymbols = 0;
+  int symbolsCount = 0;
   int numberOfCharactersInTheFile = 0;
   int numberOfUniqueWords = 0;
   String mostFrequentlyRepeatedWord = '';
@@ -32,16 +33,16 @@ void main() {
   print(
       '********************************************************************************************************************');
   print(intelligenceData);
-  countSymbols = intelligenceData.length;
+  symbolsCount = intelligenceData.length;
   print(
       '********************************************************************************************************************');
 
   encryptionKey = getTheKeyFromTheUser(encryptionKey);
 
   encryptedData = dataEncodingByKey(
-      countSymbols, encryptionKey, intelligenceData, encryptedData);
+      symbolsCount, encryptionKey, intelligenceData, encryptedData);
   String encryptedIntelligenceData = encryptedData.readAsStringSync();
-  countSymbols = encryptedIntelligenceData.length;
+  symbolsCount = encryptedIntelligenceData.length;
   print('');
   print('');
   print('Bandit: Well done, now the data is encrypted!');
@@ -57,7 +58,7 @@ void main() {
   print(
       '********************************************************************************************************************');
   decipheredData = dataDecipheringByKey(
-      countSymbols, encryptionKey, encryptedIntelligenceData, decipheredData);
+      symbolsCount, encryptionKey, encryptedIntelligenceData, decipheredData);
   String decipheredIntelligenceData = decipheredData.readAsStringSync();
   print(decipheredIntelligenceData);
   print(
@@ -69,19 +70,17 @@ void main() {
   numberOfCharactersInTheFile = countTheNumberOfCharactersInTheText(
       numberOfCharactersInTheFile, decipheredIntelligenceData);
   print('Number of characters in the file: $numberOfCharactersInTheFile');
-  // Самый длинный - самый короткий файл по колличеству символов
 
-  numberOfUniqueWords =
-      countsTheNumberOfUniqueWords(decipheredIntelligenceData);
+  numberOfUniqueWords = countsTheNumberUniqueWords(decipheredIntelligenceData);
   print('Number of unique words: $numberOfUniqueWords');
   // кількість унікальних слів у кожному файлі.
 
   mostFrequentlyRepeatedWord =
-      findingTheWordThatOccursMostFrequently(decipheredIntelligenceData);
+      findingWordThatOccursMostFrequently(decipheredIntelligenceData);
   print('The most frequently repeated word: $mostFrequentlyRepeatedWord');
   // слово, которое встречается чаще всего
 
-  topFifeLongestWords = topFifeTheLongestWords(decipheredIntelligenceData);
+  topFifeLongestWords = getTopFifeTheLongestWords(decipheredIntelligenceData);
   print('');
   // Знайти топ-5 найдовших слів.
 
@@ -90,7 +89,7 @@ void main() {
   print('');
   suspiciousNumbers = findSuspiciousNumbers(phoneNumbersList);
   // работа с подозрительными номерами
-  recordingOfTheInvestigationReport(
+  recordInvestigationReport(
       investigationReport,
       numberOfCharactersInTheFile,
       numberOfUniqueWords,
@@ -107,22 +106,24 @@ void main() {
   print('Detective: I got the key now I will encrypt it.');
   print('');
   encryptedInvestigationReport = dataEncodingByKey(
-      countSymbols, encryptionKey, investigationReportData, encryptedData);
+      symbolsCount, encryptionKey, investigationReportData, encryptedData);
   print('');
   print('Detective: Mission accomplished sir.');
   // зашифровка данных детективом
 
-  cleaningUpFiles(encryptedData, decipheredData, investigationReport, encryptedInvestigationReport);
+  cleanFile(encryptedData, decipheredData, investigationReport,
+      encryptedInvestigationReport);
 }
 
-void cleaningUpFiles(File encryptedData, File decipheredData, File investigationReport, File encryptedInvestigationReport) {
-   encryptedData.writeAsStringSync('');
+void cleanFile(File encryptedData, File decipheredData,
+    File investigationReport, File encryptedInvestigationReport) {
+  encryptedData.writeAsStringSync('');
   decipheredData.writeAsStringSync('');
   investigationReport.writeAsStringSync('');
   encryptedInvestigationReport.writeAsStringSync('');
 }
 
-void recordingOfTheInvestigationReport(
+void recordInvestigationReport(
     File investigationReport,
     int numberOfCharactersInTheFile,
     int numberOfUniqueWords,
@@ -177,28 +178,39 @@ List<String> findSuspiciousNumbers(List<String> phoneNumbers) {
   }
   for (var phoneNumber in phoneNumbers) {
     if (phoneNumber.startsWith('+380')) {
-      String phoneDigits = phoneNumber.substring(4);
-      if (phoneDigits.substring(0, 3) ==
-          phoneDigits.substring(phoneDigits.length - 3)) {
-        suspiciousNumbers.add(phoneNumber);
-        continue;
-      }
-      bool isCrossDigits = true;
-      for (int i = 0; i < phoneDigits.length ~/ 2; i++) {
-        if (phoneDigits[i] != phoneDigits[phoneDigits.length - i - 1]) {
-          isCrossDigits = false;
-          break;
-        }
-      }
-      if (isCrossDigits) {
-        suspiciousNumbers.add(phoneNumber);
-      }
+      processPhoneNumber(phoneNumber, suspiciousNumbers);
     }
   }
   for (int i = 0; i < suspiciousNumbers.length; i++) {
     print(suspiciousNumbers[i]);
   }
   return suspiciousNumbers;
+}
+
+bool isHasSameStartAndEnd(String phoneDigits) {
+  return phoneDigits.substring(0, 3) ==
+      phoneDigits.substring(phoneDigits.length - 3);
+}
+
+bool isSymmetric(String phoneDigits) {
+  for (int i = 0; i < phoneDigits.length ~/ 2; i++) {
+    if (phoneDigits[i] != phoneDigits[phoneDigits.length - i - 1]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void processPhoneNumber(String phoneNumber, List<String> suspiciousNumbers) {
+  String phoneDigits = phoneNumber.substring(4);
+
+  if (isHasSameStartAndEnd(phoneDigits)) {
+    suspiciousNumbers.add(phoneNumber);
+    return;
+  }
+  if (isSymmetric(phoneDigits)) {
+    suspiciousNumbers.add(phoneNumber);
+  }
 }
 
 List<String> findingAllPhoneNumbers(String decipheredIntelligenceData) {
@@ -218,7 +230,7 @@ List<String> findingAllPhoneNumbers(String decipheredIntelligenceData) {
   return phoneNumbersList;
 }
 
-List<String> topFifeTheLongestWords(String decipheredIntelligenceData) {
+List<String> getTopFifeTheLongestWords(String decipheredIntelligenceData) {
   List<String> intelligenceDataList = decipheredIntelligenceData
       .split(RegExp(r'\s+')) // разбивает данные в нашей строке по пробелам
       .map((word) =>
@@ -242,20 +254,19 @@ List<String> topFifeTheLongestWords(String decipheredIntelligenceData) {
   return topFifeLongestWords;
 }
 
-String findingTheWordThatOccursMostFrequently(
-    String decipheredIntelligenceData) {
+String findingWordThatOccursMostFrequently(String decipheredIntelligenceData) {
   List<String> intelligenceDataList =
       decipheredIntelligenceData.split(RegExp(r'\s+'));
   var count = <String, int>{};
   for (final w in intelligenceDataList) {
-    count[w] = 1 + (count[w] ?? 0);
+    count[w] = wordOccurrenceIncrement + (count[w] ?? 0);
   }
   var orderedList = count.keys.toList();
   orderedList.sort((a, b) => count[b]!.compareTo(count[a]!));
   return orderedList[0];
 }
 
-int countsTheNumberOfUniqueWords(String decipheredIntelligenceData) {
+int countsTheNumberUniqueWords(String decipheredIntelligenceData) {
   List<String> intelligenceDataList = decipheredIntelligenceData
       .split(RegExp(r'\s+'))
       .map((word) => word.replaceAll(RegExp(r'\W'), ''))
