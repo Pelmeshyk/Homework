@@ -3,6 +3,9 @@ import 'dart:io';
 
 const int numberDenotingTheTopNumberOfLongestWords = 5;
 const int wordOccurrenceIncrement = 1;
+const int minimumNumberOfDigitsInAPhoneNumber = 9;
+const int maximumNumberOfDigitsInAPhoneNumber = 15;
+const int plusSymbolBeforeTheNumber = 1;
 
 void main() {
   int symbolsCount = 0;
@@ -73,22 +76,17 @@ void main() {
 
   numberOfUniqueWords = countsTheNumberUniqueWords(decipheredIntelligenceData);
   print('Number of unique words: $numberOfUniqueWords');
-  // кількість унікальних слів у кожному файлі.
 
   mostFrequentlyRepeatedWord =
       findingWordThatOccursMostFrequently(decipheredIntelligenceData);
   print('The most frequently repeated word: $mostFrequentlyRepeatedWord');
-  // слово, которое встречается чаще всего
 
   topFifeLongestWords = getTopFifeTheLongestWords(decipheredIntelligenceData);
   print('');
-  // Знайти топ-5 найдовших слів.
 
   phoneNumbersList = findingAllPhoneNumbers(decipheredIntelligenceData);
-  // находим все номера
   print('');
   suspiciousNumbers = findSuspiciousNumbers(phoneNumbersList);
-  // работа с подозрительными номерами
   recordInvestigationReport(
       investigationReport,
       numberOfCharactersInTheFile,
@@ -98,7 +96,6 @@ void main() {
       phoneNumbersList,
       suspiciousNumbers);
   investigationReportData = investigationReport.readAsStringSync();
-  // записываем данные в новый файл
   print('');
   print(
       'Detective: I have collected the necessary information, now I encrypt the data.');
@@ -109,7 +106,6 @@ void main() {
       symbolsCount, encryptionKey, investigationReportData, encryptedData);
   print('');
   print('Detective: Mission accomplished sir.');
-  // зашифровка данных детективом
 
   cleanFile(encryptedData, decipheredData, investigationReport,
       encryptedInvestigationReport);
@@ -146,27 +142,24 @@ void recordInvestigationReport(
   print('');
   investigationReport.writeAsStringSync('Top fife longest words: ',
       mode: FileMode.append);
-  for (int i = 0; i < topFifeLongestWords.length; i++) {
-    investigationReport.writeAsStringSync('${topFifeLongestWords[i]}, ',
-        mode: FileMode.append);
-  }
+  writeDataInFileStringSync(topFifeLongestWords, investigationReport);
   investigationReport.writeAsStringSync(';', mode: FileMode.append);
   print('');
   investigationReport.writeAsStringSync('All phone numbers: ',
       mode: FileMode.append);
-  for (int i = 0; i < phoneNumbersList.length; i++) {
-    investigationReport.writeAsStringSync('${phoneNumbersList[i]}, ',
-        mode: FileMode.append);
-  }
+  writeDataInFileStringSync(phoneNumbersList, investigationReport);
   investigationReport.writeAsStringSync(';', mode: FileMode.append);
   print('');
   investigationReport.writeAsStringSync('All suspicious numbers: ',
       mode: FileMode.append);
-  for (int i = 0; i < suspiciousNumbers.length; i++) {
-    investigationReport.writeAsStringSync('${suspiciousNumbers[i]}, ',
-        mode: FileMode.append);
-  }
+  writeDataInFileStringSync(suspiciousNumbers, investigationReport);
   investigationReport.writeAsStringSync(';', mode: FileMode.append);
+}
+
+void writeDataInFileStringSync(List<String> data, File file) {
+  for (int i = 0; i < data.length; i++) {
+    file.writeAsStringSync('${data[i]}, ', mode: FileMode.append);
+  }
 }
 
 List<String> findSuspiciousNumbers(List<String> phoneNumbers) {
@@ -201,52 +194,61 @@ bool isSymmetric(String phoneDigits) {
   return true;
 }
 
-void processPhoneNumber(String phoneNumber, List<String> suspiciousNumbers) {
+bool isNumberSuspicious(String phoneNumber) {
   String phoneDigits = phoneNumber.substring(4);
 
   if (isHasSameStartAndEnd(phoneDigits)) {
-    suspiciousNumbers.add(phoneNumber);
-    return;
+    return true;
   }
   if (isSymmetric(phoneDigits)) {
+    return true;
+  }
+  return false;
+}
+
+void processPhoneNumber(String phoneNumber, List<String> suspiciousNumbers) {
+  if (isNumberSuspicious(phoneNumber)) {
     suspiciousNumbers.add(phoneNumber);
   }
 }
 
 List<String> findingAllPhoneNumbers(String decipheredIntelligenceData) {
-  RegExp phoneRegExp = RegExp(r'\+\d{9,15}');
-  Iterable<RegExpMatch> matches =
-      phoneRegExp.allMatches(decipheredIntelligenceData);
   List<String> phoneNumbersList = [];
-  print('All phone numbers: ');
-  if (matches.isEmpty) {
-    print('There are no mobile numbers here.');
-    return [];
+  int i = 0;
+
+  while (i < decipheredIntelligenceData.length) {
+    if (decipheredIntelligenceData[i] == '+') {
+      int start = i;
+      int digitCount = 0;
+      i++;
+      while (i < decipheredIntelligenceData.length &&
+          '0123456789'.contains(decipheredIntelligenceData[i])) {
+        digitCount++;
+        i++;
+      }
+      if (digitCount >= minimumNumberOfDigitsInAPhoneNumber &&
+          digitCount <= maximumNumberOfDigitsInAPhoneNumber) {
+        phoneNumbersList.add(decipheredIntelligenceData.substring(
+            start, start + plusSymbolBeforeTheNumber + digitCount));
+      }
+    } else {
+      i++;
+    }
   }
-  for (var match in matches) {
-    phoneNumbersList.add(match.group(0)!);
-    print(match.group(0));
+  print("All phone numbers: ");
+  for (int i = 0; i < phoneNumbersList.length; i++) {
+    print(phoneNumbersList[i]);
   }
   return phoneNumbersList;
 }
 
 List<String> getTopFifeTheLongestWords(String decipheredIntelligenceData) {
-  List<String> intelligenceDataList = decipheredIntelligenceData
-      .split(RegExp(r'\s+')) // разбивает данные в нашей строке по пробелам
-      .map((word) =>
-          word.replaceAll(RegExp(r'\W'), '')) // убирает знаки перепинания
-      .where((word) => RegExp(r'^[a-zA-Z]+$')
-          .hasMatch(word)) // читает только латинские буквы
-      .toList();
+  List<String> intelligenceDataList = splitStringBySpaces(decipheredIntelligenceData);
+  intelligenceDataList = removeNonWordCharacters(intelligenceDataList);
+  intelligenceDataList = filterOnlyAlphabetic(intelligenceDataList);
 
   List<String> topFifeLongestWords = [];
-  for (int i = 0; i < numberDenotingTheTopNumberOfLongestWords; i++) {
-    String longestWord = intelligenceDataList.reduce((a, b) {
-      return a.length > b.length ? a : b;
-    });
-    topFifeLongestWords.add(longestWord);
-    intelligenceDataList.remove(longestWord);
-  }
+  findTheFiveLongestWords(intelligenceDataList, topFifeLongestWords);
   print('Top fife longest words: ');
   for (int i = 0; i < topFifeLongestWords.length; i++) {
     print(topFifeLongestWords[i]);
@@ -254,24 +256,128 @@ List<String> getTopFifeTheLongestWords(String decipheredIntelligenceData) {
   return topFifeLongestWords;
 }
 
-String findingWordThatOccursMostFrequently(String decipheredIntelligenceData) {
-  List<String> intelligenceDataList =
-      decipheredIntelligenceData.split(RegExp(r'\s+'));
-  var count = <String, int>{};
-  for (final w in intelligenceDataList) {
-    count[w] = wordOccurrenceIncrement + (count[w] ?? 0);
+void findTheFiveLongestWords(
+    List<String> intelligenceDataList, List<String> topFifeLongestWords) {
+  for (int i = 0; i < numberDenotingTheTopNumberOfLongestWords; i++) {
+    if (intelligenceDataList.isEmpty) {
+      break;
+    }
+    String longestWord = intelligenceDataList[0];
+    int longestIndex = 0;
+
+    for (int j = 1; j < intelligenceDataList.length; j++) {
+      if (intelligenceDataList[j].length > longestWord.length) {
+        longestWord = intelligenceDataList[j];
+        longestIndex = j;
+      }
+    }
+    topFifeLongestWords.add(longestWord);
+    intelligenceDataList.removeAt(longestIndex);
   }
-  var orderedList = count.keys.toList();
-  orderedList.sort((a, b) => count[b]!.compareTo(count[a]!));
-  return orderedList[0];
+}
+
+String findingWordThatOccursMostFrequently(String decipheredIntelligenceData) {
+  List<String> intelligenceDataList = splitStringBySpaces(decipheredIntelligenceData);
+
+  Map<String, int> count = {};
+  for (var word in intelligenceDataList) {
+    count[word] = 1 + (count[word] ?? 0);
+  }
+
+  List<String> wordList = count.keys.toList();
+
+  for (int i = 0; i < wordList.length - 1; i++) {
+    for (int j = 0; j < wordList.length - i - 1; j++) {
+      if (count[wordList[j]]! < count[wordList[j + 1]]!) {
+        var temp = wordList[j];
+        wordList[j] = wordList[j + 1];
+        wordList[j + 1] = temp;
+      }
+    }
+  }
+  return wordList[0];
+}
+
+List<String> splitStringBySpaces(String data) {
+  List<String> words = [];
+  String currentWord = '';
+  for (int i = 0; i < data.length; i++) {
+    String char = data[i];
+
+    if (char != ' ') {
+      currentWord += char;
+    } else {
+      if (currentWord.isNotEmpty) {
+        words.add(currentWord);
+        currentWord = '';
+      }
+    }
+  }
+  if (currentWord.isNotEmpty) {
+    words.add(currentWord);
+  }
+  return words;
+}
+
+List<String> removeNonWordCharacters(List<String> words) {
+  List<String> result = [];
+
+  for (var word in words) {
+    String cleanedWord = '';
+
+    for (int i = 0; i < word.length; i++) {
+      String char = word[i];
+      if (_isLetterOrDigit(char)) {
+        cleanedWord += char;
+      }
+    }
+
+    result.add(cleanedWord);
+  }
+
+  return result;
+}
+
+List<String> filterOnlyAlphabetic(List<String> words) {
+  List<String> result = [];
+
+  for (var word in words) {
+    if (_isAllLetters(word)) {
+      result.add(word);
+    }
+  }
+
+  return result;
+}
+
+bool _isAllLetters(String word) {
+  for (int i = 0; i < word.length; i++) {
+    if (!_isLetter(word[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool _isLetter(String char) {
+  int code = char.codeUnitAt(0);
+  return (code >= 65 && code <= 90) ||
+      (code >= 97 && code <= 122);
+}
+
+
+bool _isLetterOrDigit(String char) {
+  int code = char.codeUnitAt(0);
+  return (code >= 65 && code <= 90) ||
+      (code >= 97 && code <= 122) ||
+      (code >= 48 && code <= 57);
 }
 
 int countsTheNumberUniqueWords(String decipheredIntelligenceData) {
-  List<String> intelligenceDataList = decipheredIntelligenceData
-      .split(RegExp(r'\s+'))
-      .map((word) => word.replaceAll(RegExp(r'\W'), ''))
-      .where((word) => RegExp(r'^[a-zA-Z]+$').hasMatch(word))
-      .toList();
+  List<String> intelligenceDataList = splitStringBySpaces(decipheredIntelligenceData);
+  intelligenceDataList = removeNonWordCharacters(intelligenceDataList);
+  intelligenceDataList = filterOnlyAlphabetic(intelligenceDataList);
+
   String listElement = '';
   int numberOfUniqueWords = 0;
 
@@ -292,8 +398,7 @@ int countsTheNumberUniqueWords(String decipheredIntelligenceData) {
 
 int countTheNumberOfCharactersInTheText(
     int numberOfCharactersInTheFile, String decipheredIntelligenceData) {
-  numberOfCharactersInTheFile =
-      decipheredIntelligenceData.length; // длина файла
+  numberOfCharactersInTheFile = decipheredIntelligenceData.length;
   return numberOfCharactersInTheFile;
 }
 
@@ -315,8 +420,7 @@ File dataEncodingByKey(
     int value = data.codeUnitAt(i) + key;
     String char = String.fromCharCode(value);
     encryptedData.writeAsStringSync(char, mode: FileMode.append);
-    stdout.write(
-        '$char '); // когда ключ цифра 3, не работает, не выводит столько знаков сколько есть в файле, при других случаях все норм;
+    stdout.write('$char ');
   }
   return encryptedData;
 }
