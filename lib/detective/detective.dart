@@ -181,6 +181,9 @@ List<String> findSuspiciousNumbers(List<String> phoneNumbers) {
 }
 
 bool isHasSameStartAndEnd(String phoneDigits) {
+  if (phoneDigits.length < 3) {
+    return false;
+  }
   return phoneDigits.substring(0, 3) ==
       phoneDigits.substring(phoneDigits.length - 3);
 }
@@ -241,6 +244,14 @@ List<String> findingAllPhoneNumbers(String decipheredIntelligenceData) {
   }
   return phoneNumbersList;
 }
+
+
+
+
+
+
+
+
 
 List<String> getTopFifeTheLongestWords(String decipheredIntelligenceData) {
   List<String> intelligenceDataList = splitStringBySpaces(decipheredIntelligenceData);
